@@ -1,0 +1,20 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Sign Up</h1>
+    <form action="" method="post" name="signup">
+        {{ form.hidden_tag() }}
+        <p>
+            Please enter firstname:<br>
+            {{ form.firstname(size=20) }}<br>
+            Please enter lastname:<br>
+            {{ form.lastname(size=20) }}<br>
+            Please enter andrewid:<br>
+            {{ form.andrewid(size=20) }}<br>
+            Please enter password:<br>
+            {{ form.password(size=20) }}<br>
+        </p>
+        <p><input type="submit" value="Sign Up"></p>
+    </form>
+{% endblock %}

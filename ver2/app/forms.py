@@ -1,16 +1,16 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, BooleanField, TextField, TextAreaField, SubmitField, validators, ValidationError, PasswordField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Length
 from models import db, User
 
+class EditForm(Form):
+    firstname = StringField('firstname', validators=[DataRequired()])
+    about_me = TextAreaField('about_me', validators=[Length(min=0, max=140)])
 
-class LoginForm(Form):
-  andrewid = TextField("andrewid",  [validators.Required("Please enter your id.")])
+class SigninForm(Form):
+  andrewid = TextField("Email",  [validators.Required("Please enter your andrewid.")])
   password = PasswordField('Password', [validators.Required("Please enter a password.")])
   submit = SubmitField("Sign In")
-  firstname = TextField("firstname")
-  lastname = TextField("lastname")
-  email = TextField("email")
    
   def __init__(self, *args, **kwargs):
     Form.__init__(self, *args, **kwargs)
@@ -20,11 +20,12 @@ class LoginForm(Form):
       return False
      
     user = User.query.filter_by(andrewid = self.andrewid.data.lower()).first()
-    if user and user.check_password(self.password.data):
+    if user and user.password == self.password.data:
       return True
     else:
-      self.email.errors.append("Invalid e-mail or password")
+      self.andrewid.errors.append("Invalid id or password")
       return False
+
 
 class SignUpForm(Form):
   firstname = TextField("First name",  [validators.Required("Please enter your first name.")])

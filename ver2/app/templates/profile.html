@@ -1,7 +1,16 @@
+<!-- extend base layout -->
 {% extends "base.html" %}
+
 {% block content %}
-  <div class="jumbo">
-    <h2>Profile<h2>
-    <h3>This is 's profile page<h3>
-  </div>
+  <table>
+      <tr valign="top">
+          <td>
+              <h1>User: {{ user.firstname }}</h1>
+          </td>
+      </tr>
+  </table>
+  <hr>
+  {% for post in posts %}
+      {% include 'post.html' %}
+  {% endfor %}
 {% endblock %}

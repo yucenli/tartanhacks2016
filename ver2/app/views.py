@@ -1,8 +1,9 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, oid
-from forms import LoginForm, SignUpForm
+from forms import SignUpForm, SigninForm
 from models import User
+from datetime import datetime
 
 
 @lm.user_loader
@@ -15,7 +16,12 @@ def before_request():
     g.user = current_user
 
 
+
 @app.route('/')
+def home():
+  return render_template('home.html')
+
+
 @app.route('/index')
 @login_required
 def index():
@@ -35,9 +41,10 @@ def index():
                            user=user,
                            posts=posts)
 
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+  if g.user is not None and g.user.is_authenticated:
+        return redirect(url_for('index'))
   form = SignUpForm()
    
   if request.method == 'POST':
@@ -46,54 +53,64 @@ def signup():
       db.session.commit()
 
       session['andrewid'] = newuser.andrewid
-       
+      login_user(newuser, remember=True)
       return redirect(url_for('profile'))
-   
   elif request.method == 'GET':
     return render_template('signup.html', form=form)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    form = SigninForm()
+    if form.validate_on_submit():
+        user = User.query.get(form.andrewid.data)
+        if user:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                user.authenticated = True
+                db.session.add(user)
+                db.session.commit()
+                login_user(user, remember=True)
+                return render_template('profile.html', user=user)
+    return render_template('signin.html', form=form)
 
 
 @app.route('/profile')
+@login_required
 def profile():
-  return render_template('profile.html')
+  if 'andrewid' not in session:
+    return redirect(url_for('login'))
+  return render_template('profile.html', user=user)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-  form = LoginForm()
-   
-  if request.method == 'POST':
-    if form.validate() == False:
-      return render_template('signup.html', form=form)
-    else:
-      session['andrewid'] = form.andrewid.data
-      return redirect(url_for('profile'))
-                 
-  elif request.method == 'GET':
-    return render_template('signup.html', form=form)
+@app.route('/all')
+@login_required
+def all():
+  for user in db.session.query(User).filter_by(firstname):
+     print user
+  return redirect(url_for('user', firstname=firstname))
 
-
-@oid.after_login
-def after_login(resp):
-    if resp.email is None or resp.email == "":
-        flash('Invalid login. Please try again.')
-        return redirect(url_for('login'))
-    user = User.query.filter_by(email=resp.email).first()
-    if user is None:
-        nickname = resp.nickname
-        if nickname is None or nickname == "":
-            nickname = resp.email.split('@')[0]
-        user = User(nickname=nickname, email=resp.email)
-        db.session.add(user)
-        db.session.commit()
-    remember_me = False
-    if 'remember_me' in session:
-        remember_me = session['remember_me']
-        session.pop('remember_me', None)
-    login_user(user, remember=remember_me)
-    return redirect(request.args.get('next') or url_for('index'))
+@app.route('/user/<andrewid>')
+@login_required
+def user(andrewid):
+    user = User.query.filter_by(andrewid=andrewid).first()
+    if user == None:
+        flash('User %s not found.' % andrewid)
+        return redirect(url_for('index'))
+    posts = [
+        {'author': user, 'body': 'Test post #1'},
+        {'author': user, 'body': 'Test post #2'}
+    ]
+    return render_template('user.html',
+                           user=user,
+                           posts=posts)
 
 
-@app.route('/logout')
+@app.route("/logout", methods=["GET"])
+@login_required
 def logout():
+    """Logout the current user."""
+    user = current_user
+    user.authenticated = False
+    db.session.add(user)
+    db.session.commit()
     logout_user()
-    return redirect(url_for('index'))
+    return render_template("home.html")

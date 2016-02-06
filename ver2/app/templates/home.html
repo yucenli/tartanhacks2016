@@ -1,0 +1,50 @@
+<html>
+<style>
+body {
+	background-color: #000;
+}
+
+#quote {
+	font-size:100px;
+	color:#e5e5e5;
+	text-align: center;
+	vertical-align: center;
+	width:380px;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:200px;
+    opacity: 1;
+}
+
+.button {
+	font-size:30px;
+	width:200px;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:100px;
+	text-align: center;
+}
+
+.button a {
+	background: #999;
+	padding: 20px;
+	display:block;
+	color: #000;
+	border-radius:20px;
+	width: 100px;
+	text-decoration:none;
+	margin:40px;
+}
+</style>
+  <head>
+    <title>Network</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+  </head>
+  <body>
+    <div id = "quote">You are not alone.</div>
+    <div class="button">
+    	<a href="/login">Login</a>
+    	<a href="/signup">Sign Up</a>
+    </div>
+  </body>
+</html>
